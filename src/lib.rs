@@ -32,42 +32,54 @@ impl Config {
     }
 }
 
-pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
+#[derive(Debug)]
+pub struct Line {
+    content: String,
+    index: usize,
+}
 
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line)
+impl Line {
+    fn new(content: String, index: usize) -> Line {
+        Line{ content, index}
+    }
+}
+
+pub fn search<'a>(query: &str, contents: &'a str, ignore_case: bool) -> Vec<Line> {
+    // Make query case aware
+    let case_aware_query = if ignore_case {
+        &query.to_lowercase()
+    } else {
+        query
+    };
+
+    let mut results: Vec<Line> = Vec::new();
+
+    for (index,line) in contents.lines().enumerate() {
+        // Make line case aware
+        let case_aware_line = if ignore_case {
+            &line.to_lowercase()
+        } else {
+            line
+        };
+
+        if case_aware_line.contains(case_aware_query) {
+            results.push(
+                Line::new(line.to_string(), index)
+            )
         }
     }
 
     results
 }
 
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            results.push(line)
-        }
-    }
-
-    results
-}
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.file_path)?;
 
-    let results = if config.ignore_case {
-        search_case_insensitive(&config.query, &contents)
-    } else {
-        search(&config.query, &contents)
-    };
+    let lines = search(&config.query, &contents, config.ignore_case);
 
-    for line in results {
-        println!("{line}");
+    for line in lines {
+        println!("{:?}", line);
     }
 
     Ok(())
@@ -75,6 +87,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
+    // TODO: Update tests to work
     use super::*;
 
     #[test]
