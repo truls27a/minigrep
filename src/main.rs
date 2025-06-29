@@ -6,79 +6,67 @@ use std::io::prelude::*;
 struct GrepConfig {
     query: String,
     file_path: String,
-    case_sensitive: bool,
+    case_insensitive: bool,
 }
 
 impl GrepConfig {
-    fn new(env_args: &[String]) -> Result<Self, String> {
-        if env_args.len() < 2 {
-            return Err("Query and file path args missing!".to_string());
-        } else if env_args.len() < 3 {
-            return Err("File path arg missing!".to_string());
+    fn new(query: String, file_path: String, case_insensitive: bool) -> Self {
+        GrepConfig {
+            query,
+            file_path,
+            case_insensitive,
         }
-
-        let mut case_sensitive = false;
-        if &env_args[3] == "true" {
-            case_sensitive = true;
-        }
-
-        Ok(GrepConfig {
-            query: env_args[1].to_string(),
-            file_path: env_args[2].to_string(),
-            case_sensitive: case_sensitive,
-        })
     }
 
     fn from_env() -> Result<Self, String> {
-        Self::new(&env::args().collect::<Vec<_>>())
+        let env_args = &env::args().collect::<Vec<_>>();
+        if env_args.len() < 3 {
+            return Err("Usage: minigrep <query> <file_path>".into());
+        }
+
+        let query = env_args[1].clone();
+        let file_path = env_args[2].clone();
+        let case_insensitive = env::var("CASE_INSENSITIVE").is_err();
+
+        Ok(Self::new(query, file_path, case_insensitive))
     }
 }
 
 fn parse_lines(file_path: &str) -> Result<Vec<String>, std::io::Error> {
     let file: File = File::open(file_path)?;
     let buff_reader: BufReader<File> = BufReader::new(file);
-    let lines = buff_reader.lines();
-
-    let mut formated_lines: Vec<String> = Vec::new();
-    for line in lines {
-        let formated_line = match line {
-            Ok(line) => line,
-            Err(_) => String::new()
-        };
-        formated_lines.push(formated_line)
-    }
-    
-    Ok(formated_lines)
+    let lines = buff_reader
+        .lines()
+        .collect::<Result<Vec<String>, std::io::Error>>()?;
+    Ok(lines)
 }
 
-fn query_lines<'a>(lines: &'a [String], query: &str, case_sensitive: bool) -> Vec<&'a str> {
+fn query_lines<'a>(lines: &'a [String], query: &str, case_insensitive: bool) -> Vec<&'a str> {
     let mut matching_lines: Vec<&str> = Vec::new();
     let query_lower_case = query.to_lowercase();
 
     for line in lines {
-        if case_sensitive {
-            if line.contains(&query) {
-                matching_lines.push(line);
-            }
-        } else {
+        if case_insensitive {
             if line.to_lowercase().contains(&query_lower_case) {
                 matching_lines.push(line);
             }
+        } else {
+            if line.contains(&query) {
+                matching_lines.push(line);
+            }
         }
-        
-    };
+    }
 
     matching_lines
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config: GrepConfig  = GrepConfig::from_env()?;
-    
+    let config: GrepConfig = GrepConfig::from_env()?;
+
     let lines: Vec<String> = parse_lines(&config.file_path)?;
 
-    let matches: Vec<&str> = query_lines(&lines, &config.query, config.case_sensitive);
+    let matches: Vec<&str> = query_lines(&lines, &config.query, config.case_insensitive);
 
     println!("{:?}", matches);
     Ok(())
-
 }
