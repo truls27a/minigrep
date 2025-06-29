@@ -51,20 +51,15 @@ fn query_lines(lines: Lines<BufReader<File>>, query: &str) -> Vec<String> {
     return matching_lines
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let env_args: Vec<String> = env::args().collect();
-    let grep_config: GrepConfig = match GrepConfig::new(&env_args) {
-        Ok(grep_config) => grep_config,
-        Err(message) => panic!("{message}"),
-    };
+    let config: GrepConfig = GrepConfig::new(&env_args)?;
 
-    let lines = match parse_lines(&grep_config.file_path) {
-        Ok(lines) => lines,
-        Err(_) => panic!("Failed to read lines"),
-    };
+    let lines = parse_lines(&config.file_path)?;
 
-    let matching_lines: Vec<String> = query_lines(lines, &grep_config.query);
+    let matches: Vec<String> = query_lines(lines, &config.query);
 
-    println!("{:?}", matching_lines);
+    println!("{:?}", matches);
+    Ok(())
 
 }
