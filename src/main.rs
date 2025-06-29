@@ -46,12 +46,8 @@ fn main() -> std::io::Result<()> {
             }
         };
 
-        let words = line.split_whitespace();
-        for word in words {
-            if word == grep_config.query {
-                matching_lines.push(line);
-                break
-            }
+        if line.contains(&grep_config.query) {
+            matching_lines.push(line)
         }
     }
 
