@@ -3,19 +3,36 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::env;
 
-fn main() -> std::io::Result<()> {
-    let args: Vec<String> = env::args().collect();
-    
-    if args.len() < 2 {
-        panic!("Search and file path args missing!");
-    } else if args.len() < 3 {
-        panic!("File path arg missing!");
+struct GrepConfig {
+    query: String,
+    file_path: String,
+}
+
+impl GrepConfig {
+    fn new(env_args: &Vec<String>) -> Result<GrepConfig, &str> {
+        if env_args.len() < 2 {
+            return Err("Query and file path args missing!")
+        } else if env_args.len() < 3 {
+            return Err("File path arg missing!")
+        }
+
+        return Ok(GrepConfig {
+            query: env_args[1].to_string(),
+            file_path: env_args[2].to_string()
+        })
     }
-    let search = &args[1];
-    let file_path = &args[2];
+}
+
+fn main() -> std::io::Result<()> {
+    let env_args: Vec<String> = env::args().collect();
+    let grep_config = match GrepConfig::new(&env_args) {
+        Ok(grep_config) => grep_config,
+        Err(message) => panic!("{message}")
+    };
+    
 
 
-    let file = File::open(file_path)?;
+    let file = File::open(grep_config.file_path)?;
     let buff_reader = BufReader::new(file);
 
     let mut matching_lines = Vec::new();
@@ -31,7 +48,7 @@ fn main() -> std::io::Result<()> {
 
         let words = line.split_whitespace();
         for word in words {
-            if word == search {
+            if word == grep_config.query {
                 matching_lines.push(line);
                 break
             }
