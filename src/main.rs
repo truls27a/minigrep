@@ -10,7 +10,7 @@ struct GrepConfig {
 }
 
 impl GrepConfig {
-    fn new(env_args: &[String]) -> Result<GrepConfig, String> {
+    fn new(env_args: &[String]) -> Result<Self, String> {
         if env_args.len() < 2 {
             return Err("Query and file path args missing!".to_string());
         } else if env_args.len() < 3 {
@@ -27,6 +27,10 @@ impl GrepConfig {
             file_path: env_args[2].to_string(),
             case_sensitive: case_sensitive,
         })
+    }
+
+    fn from_env() -> Result<Self, String> {
+        Self::new(&env::args().collect::<Vec<_>>())
     }
 }
 
@@ -68,10 +72,9 @@ fn query_lines<'a>(lines: &'a [String], query: &str, case_sensitive: bool) -> Ve
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let env_args: Vec<String> = env::args().collect();
-    let config: GrepConfig = GrepConfig::new(&env_args)?;
-
-    let lines = parse_lines(&config.file_path)?;
+    let config: GrepConfig  = GrepConfig::from_env()?;
+    
+    let lines: Vec<String> = parse_lines(&config.file_path)?;
 
     let matches: Vec<&str> = query_lines(&lines, &config.query, config.case_sensitive);
 
