@@ -7,19 +7,26 @@ use std::io::prelude::*;
 struct GrepConfig {
     query: String,
     file_path: String,
+    case_sensitive: bool,
 }
 
 impl GrepConfig {
-    fn new(env_args: &Vec<String>) -> Result<GrepConfig, &str> {
+    fn new(env_args: &[String]) -> Result<GrepConfig, String> {
         if env_args.len() < 2 {
-            return Err("Query and file path args missing!");
+            return Err("Query and file path args missing!".to_string());
         } else if env_args.len() < 3 {
-            return Err("File path arg missing!");
+            return Err("File path arg missing!".to_string());
+        }
+
+        let mut case_sensitive = false;
+        if &env_args[3] == "true" {
+            case_sensitive = true;
         }
 
         return Ok(GrepConfig {
             query: env_args[1].to_string(),
             file_path: env_args[2].to_string(),
+            case_sensitive: case_sensitive,
         });
     }
 }
@@ -31,21 +38,30 @@ fn parse_lines(file_path: &str) -> Result<Lines<BufReader<File>>, std::io::Error
     return Ok(lines);
 }
 
-fn query_lines(lines: Lines<BufReader<File>>, query: &str) -> Vec<String> {
+fn query_lines(lines: Lines<BufReader<File>>, query: &str, case_sensitive: bool) -> Vec<String> {
     let mut matching_lines: Vec<String> = Vec::new();
+    let query_lower_case = query.to_lowercase();
 
     for line_result in lines {
         let line = match line_result {
             Ok(line) => line,
             Err(_) => {
-                println!("Failed to read line!");
+                eprintln!("Failed to read line!");
                 String::new()
             }
         };
+        
 
-        if line.contains(query) {
-            matching_lines.push(line)
+        if case_sensitive {
+            if line.contains(&query) {
+                matching_lines.push(line)
+            }
+        } else {
+            if line.to_lowercase().contains(&query_lower_case) {
+                matching_lines.push(line)
+            }
         }
+        
     };
 
     return matching_lines
@@ -57,7 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let lines = parse_lines(&config.file_path)?;
 
-    let matches: Vec<String> = query_lines(lines, &config.query);
+    let matches: Vec<String> = query_lines(lines, &config.query, config.case_sensitive);
 
     println!("{:?}", matches);
     Ok(())
