@@ -10,14 +10,32 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, &'static str> {
+    pub fn new(
+        query: String,
+        file_path: String,
+        ignore_case: bool,
+        show_line_numbers: bool,
+        only_match_words: bool,
+        inverted_match: bool,
+    ) -> Self {
+        Self {
+            query,
+            file_path,
+            ignore_case,
+            show_line_numbers,
+            only_match_words,
+            inverted_match,
+        }
+    }
+
+    pub fn build(args: &[String]) -> Result<Self, &'static str> {
         if args.len() < 3 {
             return Err("Not enough arguments");
         }
 
-        let query = args[&args.len() - 2].clone(); // Second last arg
+        let query: String = args[&args.len() - 2].clone(); // Second last arg
 
-        let file_path = args[&args.len() - 1].clone(); // Last arg
+        let file_path: String = args[&args.len() - 1].clone(); // Last arg
 
         let ignore_case = if args.contains(&"-i".to_string()) {
             true
@@ -43,7 +61,7 @@ impl Config {
             env::var("INVERTED_MATCH").is_ok()
         };
 
-        Ok(Config {
+        Ok(Self {
             query,
             file_path,
             ignore_case,
