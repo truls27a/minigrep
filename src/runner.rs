@@ -1,7 +1,7 @@
 use std::{error::Error, fs};
 
 use crate::config::Config;
-use crate::format::Content;
+use crate::model::Content;
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let text = fs::read_to_string(&config.file_path)?;
