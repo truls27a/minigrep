@@ -103,7 +103,7 @@ pub fn search<'a>(
                 if case_aware_query == word {
                     line_matches = true;
                     break;
-                };
+                }
             }
         } else {
             if case_aware_line.contains(case_aware_query) {
@@ -117,15 +117,15 @@ pub fn search<'a>(
                 let line_content = line.to_string();
                 let matching_line = Line::new(line_index, line_content);
                 results.push(matching_line);
-            };
+            }
         } else {
             if line_matches {
                 let line_index = index + 1; // We add one since index starts at 0 while line index should start at 1
                 let line_content = line.to_string();
                 let matching_line = Line::new(line_index, line_content);
                 results.push(matching_line);
-            };
-        };
+            }
+        }
     }
 
     results
@@ -146,18 +146,34 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         let colored_content = match config.inverted_match {
             true => line.content,
             false => {
-                line.content
-                    .split_whitespace()
-                    .map(|word| {
-                        if word == config.query {
-                            format!("\x1b[31m{}\x1b[0m", word) // red
-                        } else {
-                            word.to_string()
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join(" ")
-            },
+                let mut colored_content = String::new();
+
+                let content_chars: Vec<char> = line.content.chars().collect();
+                let mut content_index = 0;
+
+                let query_chars: Vec<char> = config.query.chars().collect();
+                let mut matching_query_index = 0;
+
+                while content_index < content_chars.len() {
+                    colored_content.push(content_chars[content_index]);
+
+                    if content_chars[content_index] == query_chars[matching_query_index] {
+                        matching_query_index += 1;
+                    } else {
+                        matching_query_index = 0;
+                    }
+
+                    if matching_query_index == query_chars.len() {
+                        colored_content.insert_str(content_index-matching_query_index+1, "\x1b[31m");
+                        colored_content.push_str("\x1b[0m");
+                        matching_query_index = 0;
+                    }
+
+                    content_index += 1;
+                }
+
+                colored_content
+            }
         };
 
         if config.show_line_numbers {
