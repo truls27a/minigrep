@@ -1,4 +1,3 @@
-use colored::*;
 use std::{env, error::Error, fs};
 
 pub struct Config {
@@ -144,18 +143,22 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     );
 
     for line in lines {
-        let colored_content = line
-            .content
-            .split_whitespace()
-            .map(|word| {
-                if word == config.query {
-                    word.red().to_string()
-                } else {
-                    word.to_string()
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(" ");
+        let colored_content = match config.inverted_match {
+            true => line.content,
+            false => {
+                line.content
+                    .split_whitespace()
+                    .map(|word| {
+                        if word == config.query {
+                            format!("\x1b[31m{}\x1b[0m", word) // red
+                        } else {
+                            word.to_string()
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            },
+        };
 
         if config.show_line_numbers {
             let index = line.index;
