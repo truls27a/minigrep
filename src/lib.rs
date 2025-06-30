@@ -1,12 +1,12 @@
-use std::{env, error::Error, fs};
 use colored::*;
+use std::{env, error::Error, fs};
 
 pub struct Config {
     query: String,
     file_path: String,
     ignore_case: bool,
     show_line_numbers: bool,
-    only_match_whole_words: bool,
+    only_match_words: bool,
     inverted_match: bool,
 }
 
@@ -16,9 +16,9 @@ impl Config {
             return Err("Not enough arguments");
         }
 
-        let query = args[&args.len()-2].clone(); // Second last arg
+        let query = args[&args.len() - 2].clone(); // Second last arg
 
-        let file_path = args[&args.len()-1].clone(); // Last arg
+        let file_path = args[&args.len() - 1].clone(); // Last arg
 
         let ignore_case = if args.contains(&"-i".to_string()) {
             true
@@ -32,10 +32,10 @@ impl Config {
             env::var("SHOW_LINE_NUMBERS").is_ok()
         };
 
-        let only_match_whole_words = if args.contains(&"-w".to_string()) {
+        let only_match_words = if args.contains(&"-w".to_string()) {
             true
         } else {
-            env::var("ONLY_MATCH_WHOLE_WORDS").is_ok()
+            env::var("ONLY_MATCH_WORDS").is_ok()
         };
 
         let inverted_match = if args.contains(&"-v".to_string()) {
@@ -44,14 +44,12 @@ impl Config {
             env::var("INVERTED_MATCH").is_ok()
         };
 
-
-
         Ok(Config {
             query,
             file_path,
             ignore_case,
             show_line_numbers,
-            only_match_whole_words,
+            only_match_words,
             inverted_match,
         })
     }
@@ -73,7 +71,8 @@ pub fn search<'a>(
     query: &str,
     contents: &'a str,
     ignore_case: bool,
-    only_match_whole_words: bool,
+    only_match_words: bool,
+    inverted_match: bool,
 ) -> Vec<Line> {
     // Make query case aware
     let case_aware_query = if ignore_case {
@@ -94,7 +93,7 @@ pub fn search<'a>(
 
         let mut line_matches = false;
 
-        if only_match_whole_words {
+        if only_match_words {
             let words: Vec<String> = case_aware_line
                 .split_whitespace()
                 .map(|word| word.trim_matches(|c: char| !c.is_alphanumeric()))
@@ -113,11 +112,20 @@ pub fn search<'a>(
             };
         };
 
-        if line_matches {
-            let line_index = index + 1; // We add one since index starts at 0 while line index should start at 1
-            let line_content = line.to_string();
-            let matching_line = Line::new(line_index, line_content);
-            results.push(matching_line);
+        if inverted_match {
+            if !line_matches {
+                let line_index = index + 1; // We add one since index starts at 0 while line index should start at 1
+                let line_content = line.to_string();
+                let matching_line = Line::new(line_index, line_content);
+                results.push(matching_line);
+            };
+        } else {
+            if line_matches {
+                let line_index = index + 1; // We add one since index starts at 0 while line index should start at 1
+                let line_content = line.to_string();
+                let matching_line = Line::new(line_index, line_content);
+                results.push(matching_line);
+            };
         };
     }
 
@@ -131,20 +139,23 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         &config.query,
         &contents,
         config.ignore_case,
-        config.only_match_whole_words,
+        config.only_match_words,
+        config.inverted_match,
     );
 
     for line in lines {
-        let colored_content = line.content
-        .split_whitespace().
-        map(|word| {
-            if word == config.query {
-                word.red().to_string()
-            } else {
-                word.to_string()
-            }
-        }).collect::<Vec<_>>()
-        .join(" ");
+        let colored_content = line
+            .content
+            .split_whitespace()
+            .map(|word| {
+                if word == config.query {
+                    word.red().to_string()
+                } else {
+                    word.to_string()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
 
         if config.show_line_numbers {
             let index = line.index;
@@ -159,7 +170,6 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    // TODO: Update tests to work
     use super::*;
 
     #[test]
@@ -174,7 +184,7 @@ Duct tape.
 
         assert_eq!(
             vec![Line::new(2, "safe, fast, productive.".to_string())],
-            search(query, contents, false, false)
+            search(query, contents, false, false, false)
         );
     }
 
@@ -193,12 +203,12 @@ Trust me.
                 Line::new(1, "Rust:".to_string()),
                 Line::new(4, "Trust me.".to_string())
             ],
-            search(query, contents, true, false)
+            search(query, contents, true, false, false)
         );
     }
 
     #[test]
-    fn only_match_whole_words_case_sensative() {
+    fn case_sensitive_only_match_words() {
         let query = "rust";
         let contents = "\
 Rust:
@@ -210,12 +220,12 @@ I love rust.
 
         assert_eq!(
             vec![Line::new(5, "I love rust.".to_string())],
-            search(query, contents, false, true)
+            search(query, contents, false, true, false)
         );
     }
 
     #[test]
-    fn only_match_whole_words_case_insensative() {
+    fn case_insensitive_only_match_words() {
         let query = "rust";
         let contents = "\
 Rust:
@@ -230,7 +240,66 @@ I trust rust.
                 Line::new(1, "Rust:".to_string()),
                 Line::new(5, "I trust rust.".to_string())
             ],
-            search(query, contents, true, true)
+            search(query, contents, true, true, false)
+        );
+    }
+
+    #[test]
+    fn case_sensitive_inverted_match() {
+        let query = "s";
+        let contents = "\
+RuSt:
+safe, fast, productive.
+Pick three.
+I trust dust
+I trust rust.
+";
+
+        assert_eq!(
+            vec![
+                Line::new(1, "RuSt:".to_string()),
+                Line::new(3, "Pick three.".to_string())
+            ],
+            search(query, contents, false, false, true)
+        );
+    }
+
+    #[test]
+    fn case_insensitive_inverted_match() {
+        let query = "R";
+        let contents = "\
+RuSt:
+safe, fast, productive.
+Pick three.
+I trust dust
+I trust rust.
+";
+
+        assert_eq!(
+            vec![] as Vec<Line>,
+            search(query, contents, true, false, true)
+        );
+    }
+
+    #[test]
+    fn case_sensitive_only_match_words_inverted_match() {
+        let query = "rust";
+        let contents = "\
+RuSt:
+safe, fast, productive.
+Pick three.
+I trust dust
+I trust rust.
+";
+
+        assert_eq!(
+            vec![
+                Line::new(1, "RuSt:".to_string()),
+                Line::new(2, "safe, fast, productive.".to_string()),
+                Line::new(3, "Pick three.".to_string()),
+                Line::new(4, "I trust dust".to_string()),
+            ],
+            search(query, contents, false, true, true)
         );
     }
 }
