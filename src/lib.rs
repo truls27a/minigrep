@@ -5,7 +5,9 @@ pub struct Config {
     query: String,
     file_path: String,
     ignore_case: bool,
+    show_line_numbers: bool,
     only_match_whole_words: bool,
+    inverted_match: bool,
 }
 
 impl Config {
@@ -14,35 +16,43 @@ impl Config {
             return Err("Not enough arguments");
         }
 
-        let query = args[1].clone();
+        let query = args[&args.len()-2].clone(); // Second last arg
 
-        let file_path = args[2].clone();
+        let file_path = args[&args.len()-1].clone(); // Last arg
 
-        let ignore_case = if args.len() > 3 {
-            if args[3] == "true" || args[3] == "1" {
-                true
-            } else {
-                false
-            }
+        let ignore_case = if args.contains(&"-i".to_string()) {
+            true
         } else {
             env::var("IGNORE_CASE").is_ok()
         };
 
-        let only_match_whole_words = if args.len() > 3 {
-            if args[4] == "true" || args[4] == "1" {
-                true
-            } else {
-                false
-            }
+        let show_line_numbers = if args.contains(&"-n".to_string()) {
+            true
+        } else {
+            env::var("SHOW_LINE_NUMBERS").is_ok()
+        };
+
+        let only_match_whole_words = if args.contains(&"-w".to_string()) {
+            true
         } else {
             env::var("ONLY_MATCH_WHOLE_WORDS").is_ok()
         };
+
+        let inverted_match = if args.contains(&"-v".to_string()) {
+            true
+        } else {
+            env::var("INVERTED_MATCH").is_ok()
+        };
+
+
 
         Ok(Config {
             query,
             file_path,
             ignore_case,
+            show_line_numbers,
             only_match_whole_words,
+            inverted_match,
         })
     }
 }
@@ -125,8 +135,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     );
 
     for line in lines {
-        let index = line.index;
-        let content = line.content
+        let colored_content = line.content
         .split_whitespace().
         map(|word| {
             if word == config.query {
@@ -136,7 +145,13 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
             }
         }).collect::<Vec<_>>()
         .join(" ");
-        println!("{index}: {content}");
+
+        if config.show_line_numbers {
+            let index = line.index;
+            println!("{index}: {colored_content}");
+        } else {
+            println!("{colored_content}")
+        }
     }
 
     Ok(())
