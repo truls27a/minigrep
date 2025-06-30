@@ -65,23 +65,23 @@ impl Content {
 }
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Line {
     pub index: usize,
-    pub content: String,
+    pub text: String,
 }
 
 impl Line {
-    pub fn new(index: usize, content: String) -> Self {
-        Self { index, content }
+    pub fn new(index: usize, text: String) -> Self {
+        Self { index, text }
     }
 
     pub fn search(&self, query: &str, ignore_case: bool, only_match_words: bool, inverted_match: bool) -> Option<Self> {
         // Make line case aware
         let case_aware_line = if ignore_case {
-            &self.content.to_lowercase()
+            &self.text.to_lowercase()
         } else {
-            &self.content
+            &self.text
         };
 
         let mut line_matches = false;
@@ -107,13 +107,13 @@ impl Line {
 
         let line: Option<Line> = if inverted_match {
             if !line_matches {
-                Some(Self::new(self.index, self.content.clone()))
+                Some(self.clone())
             } else {
                 None
             }
         } else {
             if line_matches {
-                Some(Self::new(self.index, self.content.clone()))
+                Some(self.clone())
             } else {
                 None
             }
@@ -125,7 +125,7 @@ impl Line {
     pub fn highlight(&self, query: &str) -> String {
         let mut colored_content = String::new();
 
-        let content_chars: Vec<char> = self.content.chars().collect();
+        let content_chars: Vec<char> = self.text.chars().collect();
         let mut content_index = 0;
 
         let query_chars: Vec<char> = query.chars().collect();
@@ -153,7 +153,7 @@ impl Line {
     }
 
     pub fn display(&self, show_line_numbers: bool) {
-        let text = &self.content;
+        let text = &self.text;
             if show_line_numbers {
                 let index = self.index;
                 println!("{index}: {text}");
