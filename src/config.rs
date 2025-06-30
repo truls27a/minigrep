@@ -34,8 +34,19 @@ impl Config {
         }
 
         let query: String = args[&args.len() - 2].clone(); // Second last arg
+        match query.chars().next() {
+            Some('-') => return Err("Query argument missing"),
+            None => return Err("Query can not be empty"),
+            _ => {},
+        }
+        
 
         let file_path: String = args[&args.len() - 1].clone(); // Last arg
+        match file_path.chars().next() {
+            Some('-') => return Err("File path argument missing"),
+            None => return Err("File path can not be empty"),
+            _ => {},
+        }
 
         let ignore_case = if args.contains(&"-i".to_string()) {
             true
@@ -140,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn config_failed_build() {
+    fn config_build_missing_query() {
         let file_path = String::from("poem.txt");
         let ignore_case = true;
         let show_line_numbers = true;
@@ -161,12 +172,48 @@ mod tests {
         if inverted_match {
             args.push(String::from("-v"));
         }
-        
+
+        // Here we are not pushing the query arg
+    
         args.push(file_path.clone()); // Needs to be last
 
         let config = Config::build(&args); // This is missing the query
 
         // Should fail due to the query missing
+        assert!(config.is_err());
+    }
+
+    #[test]
+    fn config_build_empty_file_path() {
+        let query = String::from("You");
+        let file_path = String::from("");
+        let ignore_case = true;
+        let show_line_numbers = true;
+        let only_match_words = false;
+        let inverted_match = true;
+
+        let mut args: Vec<String> = vec!["src/main.rs".into()];
+
+        if ignore_case {
+            args.push(String::from("-i"));
+        }
+        if show_line_numbers {
+            args.push(String::from("-n"));
+        }
+        if only_match_words {
+            args.push(String::from("-w"));
+        }
+        if inverted_match {
+            args.push(String::from("-v"));
+        }
+
+        
+        args.push(query.clone()); // Needs to be second last
+        args.push(file_path.clone()); // Needs to be last
+
+        let config = Config::build(&args);
+
+        // Should fail due file path being empty
         assert!(config.is_err());
     }
 }
