@@ -1,4 +1,5 @@
 use std::{env, error::Error, fs};
+use colored::*;
 
 pub struct Config {
     query: String,
@@ -91,7 +92,6 @@ pub fn search<'a>(
                 .map(|s| s.to_string())
                 .collect();
             for word in words {
-                println!("{}", word);
                 if case_aware_query == word {
                     line_matches = true;
                     break;
@@ -125,7 +125,18 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     );
 
     for line in lines {
-        println!("{:?}", line);
+        let index = line.index;
+        let content = line.content
+        .split_whitespace().
+        map(|word| {
+            if word == config.query {
+                word.red().to_string()
+            } else {
+                word.to_string()
+            }
+        }).collect::<Vec<_>>()
+        .join(" ");
+        println!("{index}: {content}");
     }
 
     Ok(())
