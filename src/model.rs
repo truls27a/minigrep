@@ -7,6 +7,10 @@ impl Content {
         Self { lines: vec![] }
     }
 
+    pub fn from_lines(lines: Vec<Line> ) -> Self {
+        Self { lines }
+    }
+
     pub fn from_str(text: &str) -> Self {
         let mut lines: Vec<Line> = Vec::new();
 
@@ -32,5 +36,53 @@ pub struct Line {
 impl Line {
     pub fn new(index: usize, text: String) -> Self {
         Self { index, text }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn content_creation_from_lines() {
+        let first_index = 3;
+        let first_text = String::from("Hello World!");
+        let second_index = 3;
+        let second_text = String::from("Hello World!");
+
+        let lines = vec![
+            Line::new(first_index, first_text.clone()),
+            Line::new(second_index, second_text.clone()),
+            
+            ];
+        let content = Content::from_lines(lines);
+
+        assert_eq!(content.lines[0].index, first_index);
+        assert_eq!(content.lines[0].text, first_text);
+        assert_eq!(content.lines[1].index, second_index);
+        assert_eq!(content.lines[1].text, second_text);
+    }
+
+    #[test]
+    fn content_creation_from_text() {
+        let text = "Hello World!\nBy World!\nI like Rust :)";
+
+        let content = Content::from_str(text);
+
+        assert_eq!(content.lines[0].index, 1);
+        assert_eq!(content.lines[0].text, "Hello World!");
+        assert_eq!(content.lines[1].text, "By World!");
+        assert_eq!(content.lines[2].text, "I like Rust :)");
+    }
+
+    #[test]
+    fn line_creation() {
+        let index = 39;
+        let text = String::from("Hello World!");
+
+        let line = Line::new(index, text.clone());
+
+        assert_eq!(line.index, 39);
+        assert_eq!(line.text, text);
     }
 }
