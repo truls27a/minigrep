@@ -32,15 +32,15 @@ impl Config {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Line {
-    content: String,
     index: usize,
+    content: String,
 }
 
 impl Line {
-    fn new(content: String, index: usize) -> Line {
-        Line{ content, index}
+    fn new(index: usize, content: String) -> Line {
+        Line { index, content }
     }
 }
 
@@ -54,7 +54,7 @@ pub fn search<'a>(query: &str, contents: &'a str, ignore_case: bool) -> Vec<Line
 
     let mut results: Vec<Line> = Vec::new();
 
-    for (index,line) in contents.lines().enumerate() {
+    for (index, line) in contents.lines().enumerate() {
         // Make line case aware
         let case_aware_line = if ignore_case {
             &line.to_lowercase()
@@ -63,15 +63,14 @@ pub fn search<'a>(query: &str, contents: &'a str, ignore_case: bool) -> Vec<Line
         };
 
         if case_aware_line.contains(case_aware_query) {
-            results.push(
-                Line::new(line.to_string(), index)
-            )
+            let line_index = index + 1; // We add one since index starts at 0 while line index should start at 1
+            let line_content = line.to_string();
+            results.push(Line::new(line_index, line_content))
         }
     }
 
     results
 }
-
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.file_path)?;
@@ -100,7 +99,10 @@ Pick three.
 Duct tape.
 ";
 
-        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+        assert_eq!(
+            vec![Line::new(2, "safe, fast, productive.".to_string())],
+            search(query, contents, false)
+        );
     }
 
     #[test]
@@ -114,8 +116,8 @@ Trust me.
 ";
 
         assert_eq!(
-            vec!["Rust:", "Trust me."],
-            search_case_insensitive(query, contents)
+            vec![Line::new(1, "Rust:".to_string()), Line::new(4, "Trust me.".to_string())],
+            search(query, contents, true)
         );
     }
 }
