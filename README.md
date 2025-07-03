@@ -11,7 +11,7 @@ Supports:
 
 1. Clone the repo:
     ```bash
-    git clone https://github.com/yourusername/minigrep
+    git clone https://github.com/truls27a/minigrep
     cd minigrep
     ```
 
