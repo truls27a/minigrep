@@ -97,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    fn highlight_matches_case_insensitively() {
+    fn line_highlight_ignores_case_when_enabled() {
         let line = Line::new(1, String::from("To be or not to be, that is the question"));
 
         let highlighted_text = line.highlight("to", true);
@@ -109,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn highlight_matches_case_sensitively() {
+    fn line_highlight_does_not_ignore_case_when_disabled() {
         let line = Line::new(1, String::from("To be or not to be, that is the question"));
 
         let highlighted_text = line.highlight("to", false);
