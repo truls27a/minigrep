@@ -3,6 +3,7 @@ use crate::model::{Content, Line};
 impl Content {
     pub fn highlight(&self, query: &str, ignore_case: bool) -> Self {
         let mut highlighted_content = Self::new();
+
         for line in &self.lines {
             let highlighted_text = line.highlight(query, ignore_case);
             highlighted_content
@@ -48,8 +49,13 @@ impl Line {
         // Finally, incriment text_index to move on to the next char
         while text_index < text_chars.len() {
             if matching_query_index == query_chars.len() {
-                highlighted_text.insert_str(text_index - matching_query_index, "\x1b[31m");
+                // "\x1b[31m" means start of red color section
+                highlighted_text
+                    .insert_str(highlighted_text.len() - matching_query_index, "\x1b[31m");
+
+                // "\x1b[0m" means end of red color section
                 highlighted_text.push_str("\x1b[0m");
+
                 matching_query_index = 0;
             }
 
@@ -91,8 +97,27 @@ mod tests {
     }
 
     #[test]
-    fn line_highlight_case_sensative_works() {
-        assert_eq!(true, false) // TODO: Impliment case sensative in line hilighting
+    fn highlight_matches_case_insensitively() {
+        let line = Line::new(1, String::from("To be or not to be, that is the question"));
+
+        let highlighted_text = line.highlight("to", true);
+
+        assert_eq!(
+            "\x1b[31mTo\x1b[0m be or not \x1b[31mto\x1b[0m be, that is the question",
+            highlighted_text
+        )
+    }
+
+    #[test]
+    fn highlight_matches_case_sensitively() {
+        let line = Line::new(1, String::from("To be or not to be, that is the question"));
+
+        let highlighted_text = line.highlight("to", false);
+
+        assert_eq!(
+            "To be or not \x1b[31mto\x1b[0m be, that is the question",
+            highlighted_text
+        )
     }
 
     #[test]
