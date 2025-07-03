@@ -1,5 +1,19 @@
 use std::env;
 
+pub fn print_help() {
+    println!("minigrep - Search for pattern in a file");
+    println!();
+    println!("Usage:");
+    println!("  minigrep [OPTIONS] <PATTERN> <FILE>");
+    println!();
+    println!("Options:");
+    println!("  -i           Ignore case");
+    println!("  -n           Show line numbers");
+    println!("  -w           Match whole words only");
+    println!("  -v           Invert match (show non-matching lines)");
+    println!("  --help       Show this help message and exit");
+}
+
 pub struct Config {
     pub query: String,
     pub file_path: String,
