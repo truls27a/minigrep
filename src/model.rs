@@ -1,3 +1,4 @@
+#[derive(Debug, PartialEq)]
 pub struct Content {
     pub lines: Vec<Line>,
 }
