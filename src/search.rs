@@ -28,8 +28,8 @@ impl Content {
 
 impl Line {
     pub fn search(&self, query: &str, ignore_case: bool, only_match_words: bool, inverted_match: bool) -> Option<Self> {
-        // Make line case aware
-        let case_aware_line = if ignore_case {
+        // Make text case aware
+        let case_aware_text = if ignore_case {
             &self.text.to_lowercase()
         } else {
             &self.text
@@ -38,7 +38,7 @@ impl Line {
         let mut line_matches = false;
 
         if only_match_words {
-            let words: Vec<String> = case_aware_line
+            let words: Vec<String> = case_aware_text
                 .split_whitespace()
                 .map(|word| word.trim_matches(|c: char| !c.is_alphanumeric()))
                 .filter(|word| !word.is_empty())
@@ -51,7 +51,7 @@ impl Line {
                 }
             }
         } else {
-            if case_aware_line.contains(query) {
+            if case_aware_text.contains(query) {
                 line_matches = true;
             };
         };

@@ -8,7 +8,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let content = Content::from_str(&text);
     let searched_content= content.search(&config.query, config.ignore_case, config.only_match_words, config.inverted_match);
-    let highlighted_content = searched_content.highlight(&config.query);
+    let highlighted_content = searched_content.highlight(&config.query, config.ignore_case);
 
     highlighted_content.display(config.show_line_numbers);
 
