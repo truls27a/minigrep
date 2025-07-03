@@ -68,52 +68,52 @@ impl Line {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn line_highlight_wraps_matching_query_in_red() {
-//         let line = Line::new(1, String::from("I am a line."));
+    #[test]
+    fn line_highlight_wraps_matching_query_in_red() {
+        let line = Line::new(1, String::from("I am a line."));
 
-//         let highlighted_text = line.highlight("line");
+        let highlighted_text = line.highlight("line", false);
 
-//         assert_eq!("I am a \x1b[31mline\x1b[0m.", highlighted_text)
-//     }
+        assert_eq!("I am a \x1b[31mline\x1b[0m.", highlighted_text)
+    }
 
-//     #[test]
-//     fn no_line_highlight_when_query_not_found() {
-//         let line = Line::new(1, String::from("I am a line."));
+    #[test]
+    fn no_line_highlight_when_query_not_found() {
+        let line = Line::new(1, String::from("I am a line."));
 
-//         let highlighted_text = line.highlight("monkey");
+        let highlighted_text = line.highlight("monkey", false);
 
-//         assert_eq!(line.text, highlighted_text)
-//     }
+        assert_eq!(line.text, highlighted_text)
+    }
 
-//     #[test]
-//     fn line_highlight_case_sensative_works() {
-//         assert_eq!(true, false) // TODO: Impliment case sensative in line hilighting
-//     }
+    #[test]
+    fn line_highlight_case_sensative_works() {
+        assert_eq!(true, false) // TODO: Impliment case sensative in line hilighting
+    }
 
-//     #[test]
-//     fn text_highlight_wraps_matching_query_in_red_in_lines() {
-//         let content = Content::from_lines(vec![
-//             Line::new(1, String::from("I am a line.")),
-//             Line::new(2, String::from("I am also line.")),
-//             Line::new(3, String::from("Me too!")),
-//             Line::new(3, String::from("Line")),
-//         ]);
+    #[test]
+    fn text_highlight_wraps_matching_query_in_red_in_lines() {
+        let content = Content::from_lines(vec![
+            Line::new(1, String::from("I am a line.")),
+            Line::new(2, String::from("I am also line.")),
+            Line::new(3, String::from("Me too!")),
+            Line::new(3, String::from("Line")),
+        ]);
 
-//         let highlighted_content = content.highlight("line");
+        let highlighted_content = content.highlight("line", false);
 
-//         assert_eq!(
-//             Content::from_lines(vec![
-//                 Line::new(1, String::from("I am a \x1b[31mline\x1b[0m.")),
-//                 Line::new(2, String::from("I am also \x1b[31mline\x1b[0m.")),
-//                 Line::new(3, String::from("Me too!")),
-//                 Line::new(3, String::from("Line")),
-//             ]),
-//             highlighted_content
-//         )
-//     }
-// }
+        assert_eq!(
+            Content::from_lines(vec![
+                Line::new(1, String::from("I am a \x1b[31mline\x1b[0m.")),
+                Line::new(2, String::from("I am also \x1b[31mline\x1b[0m.")),
+                Line::new(3, String::from("Me too!")),
+                Line::new(3, String::from("Line")),
+            ]),
+            highlighted_content
+        )
+    }
+}
