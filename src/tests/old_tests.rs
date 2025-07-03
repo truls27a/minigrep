@@ -13,7 +13,7 @@ Duct tape.
 ";
 
         assert_eq!(
-            vec![Line::new(2, "safe, fast, productive.".to_string())],
+            vec![Line::new(2, String::from("safe, fast, productive."))],
             search(query, contents, false, false, false)
         );
     }
@@ -30,8 +30,8 @@ Trust me.
 
         assert_eq!(
             vec![
-                Line::new(1, "Rust:".to_string()),
-                Line::new(4, "Trust me.".to_string())
+                Line::new(1, String::from("Rust:")),
+                Line::new(4, String::from("Trust me."))
             ],
             search(query, contents, true, false, false)
         );
@@ -49,7 +49,7 @@ I love rust.
 ";
 
         assert_eq!(
-            vec![Line::new(5, "I love rust.".to_string())],
+            vec![Line::new(5, String::from("I love rust."))],
             search(query, contents, false, true, false)
         );
     }
@@ -67,8 +67,8 @@ I trust rust.
 
         assert_eq!(
             vec![
-                Line::new(1, "Rust:".to_string()),
-                Line::new(5, "I trust rust.".to_string())
+                Line::new(1, String::from("Rust:")),
+                Line::new(5, String::from("I trust rust."))
             ],
             search(query, contents, true, true, false)
         );
@@ -87,8 +87,8 @@ I trust rust.
 
         assert_eq!(
             vec![
-                Line::new(1, "RuSt:".to_string()),
-                Line::new(3, "Pick three.".to_string())
+                Line::new(1, String::from("RuSt:")),
+                Line::new(3, String::from("Pick three."))
             ],
             search(query, contents, false, false, true)
         );
@@ -124,10 +124,10 @@ I trust rust.
 
         assert_eq!(
             vec![
-                Line::new(1, "RuSt:".to_string()),
-                Line::new(2, "safe, fast, productive.".to_string()),
-                Line::new(3, "Pick three.".to_string()),
-                Line::new(4, "I trust dust".to_string()),
+                Line::new(1, String::from("RuSt:")),
+                Line::new(2, String::from("safe, fast, productive.")),
+                Line::new(3, String::from("Pick three.")),
+                Line::new(4, String::from("I trust dust")),
             ],
             search(query, contents, false, true, true)
         );

@@ -42,7 +42,7 @@ impl Line {
                 .split_whitespace()
                 .map(|word| word.trim_matches(|c: char| !c.is_alphanumeric()))
                 .filter(|word| !word.is_empty())
-                .map(|s| s.to_string())
+                .map(|s| String::from(s))
                 .collect();
             for word in words {
                 if query == word {

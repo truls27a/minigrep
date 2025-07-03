@@ -17,7 +17,7 @@ impl Content {
         for (index, text_line) in text.lines().enumerate() {
             let line = Line::new(
                 index + 1, // Line index start at 1, not 0
-                text_line.to_string(),
+                String::from(text_line),
             );
             lines.push(line)
         }

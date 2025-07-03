@@ -48,25 +48,25 @@ impl Config {
             _ => {},
         }
 
-        let ignore_case = if args.contains(&"-i".to_string()) {
+        let ignore_case = if args.contains(&String::from("-i")) {
             true
         } else {
             env::var("IGNORE_CASE").is_ok()
         };
 
-        let show_line_numbers = if args.contains(&"-n".to_string()) {
+        let show_line_numbers = if args.contains(&String::from("-n")) {
             true
         } else {
             env::var("SHOW_LINE_NUMBERS").is_ok()
         };
 
-        let only_match_words = if args.contains(&"-w".to_string()) {
+        let only_match_words = if args.contains(&String::from("-w")) {
             true
         } else {
             env::var("ONLY_MATCH_WORDS").is_ok()
         };
 
-        let inverted_match = if args.contains(&"-v".to_string()) {
+        let inverted_match = if args.contains(&String::from("-v")) {
             true
         } else {
             env::var("INVERTED_MATCH").is_ok()
