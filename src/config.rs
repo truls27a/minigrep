@@ -88,7 +88,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn config_creation() {
+    fn config_new_preserves_fields() {
         let query = String::from("Rust!");
         let file_path = String::from("src/main.rs");
         let ignore_case = false;
@@ -114,7 +114,7 @@ mod tests {
     }
 
     #[test]
-    fn config_build() {
+    fn config_build_extracts_fields_from_args() {
         let query = String::from("To be, or not to be");
         let file_path = String::from("poem.txt");
         let ignore_case = true;
@@ -151,7 +151,7 @@ mod tests {
     }
 
     #[test]
-    fn config_build_missing_query() {
+    fn config_build_fails_if_missing_query() {
         let file_path = String::from("poem.txt");
         let ignore_case = true;
         let show_line_numbers = true;
@@ -184,7 +184,7 @@ mod tests {
     }
 
     #[test]
-    fn config_build_empty_file_path() {
+    fn config_build_fails_if_empty_file_path() {
         let query = String::from("You");
         let file_path = String::from("");
         let ignore_case = true;

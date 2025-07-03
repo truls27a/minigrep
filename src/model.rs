@@ -44,7 +44,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn content_creation_from_lines() {
+    fn content_from_lines_preserves_index_and_text() {
         let first_index = 3;
         let first_text = String::from("Hello World!");
         let second_index = 3;
@@ -64,19 +64,20 @@ mod tests {
     }
 
     #[test]
-    fn content_creation_from_text() {
+    fn content_from_str_extracts_index_and_text() {
         let text = "Hello World!\nBy World!\nI like Rust :)";
 
         let content = Content::from_str(text);
 
         assert_eq!(content.lines[0].index, 1);
         assert_eq!(content.lines[0].text, "Hello World!");
+        assert_eq!(content.lines[1].index, 2);
         assert_eq!(content.lines[1].text, "By World!");
         assert_eq!(content.lines[2].text, "I like Rust :)");
     }
 
     #[test]
-    fn line_creation() {
+    fn line_new_preserves_index_and_text() {
         let index = 39;
         let text = String::from("Hello World!");
 
